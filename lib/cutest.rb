@@ -96,7 +96,8 @@ private
 
   # Create a class where the block will be evaluated. Recommended to improve
   # isolation between tests.
-  def scope(&block)
+  def scope(name = nil, &block)
+    cutest[:current_scope] = name
     Cutest::Scope.new(&block).call
   end
 
@@ -140,9 +141,11 @@ private
   def test(name = nil, &block)
     cutest[:test] = name
 
-    if !cutest[:only] || cutest[:only] == name
-      prepare.each { |blk| blk.call }
-      block.call(setup && setup.call)
+    if !cutest[:scope] || cutest[:scope] == cutest[:current_scope]
+      if !cutest[:only] || cutest[:only] == name
+        prepare.each { |blk| blk.call }
+        block.call(setup && setup.call)
+      end
     end
   end
 

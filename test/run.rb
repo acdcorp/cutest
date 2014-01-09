@@ -64,3 +64,15 @@ test "output of failure in nested file" do
 
   assert_equal(expected, out)
 end
+
+test "only runs given scope name" do
+  out = %x{./bin/cutest test/fixtures/only_run_given_scope_name.rb -s scope}
+
+  assert out =~ /This is raised/
+end
+
+test "runs by given scope and test names" do
+  %x{./bin/cutest test/fixtures/only_run_given_scope_name.rb -s scope -o test}
+
+  assert_equal 0, $?.to_i
+end
