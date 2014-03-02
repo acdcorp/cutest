@@ -1,3 +1,4 @@
+require 'awesome_print'
 class Cutest
   unless defined?(VERSION)
     VERSION = "1.2.1"
@@ -57,15 +58,22 @@ class Cutest
   end
 
   def self.display_error
-    print "\n#{$!.class}: "
-    print "#{$!.message}\n"
+    if cutest[:backtrace]
+      bt = $!.backtrace
+      bt.each do |line|
+        display_trace line
+      end
+    end
+
+    print "\n\033[93m#{$!.class}: "
+    print "\033[91m#{$!.message}\n"
   end
 
   def self.display_trace(line)
     fn, ln = line.split(":")
 
-    puts "  line: #{code(fn, ln)}"
-    puts "  file: #{fn} +#{ln}"
+    puts "  \033[93mline: #{code(fn, ln)}"
+    puts "  \033[0mfile: #{fn} +#{ln}"
   end
 
   class AssertionFailed < StandardError
@@ -98,6 +106,7 @@ private
   # isolation between tests.
   def scope(name = nil, &block)
     cutest[:current_scope] = name
+    puts "\n   \033[93mScope: \033[0m#{cutest[:current_scope]}\n"
     Cutest::Scope.new(&block).call
   end
 
@@ -183,6 +192,6 @@ private
 
   # Executed when an assertion succeeds.
   def success
-    print "."
+    puts "     \033[93mTest: \033[0m#{cutest[:test]} \033[32m[passed]\033[0m"
   end
 end
