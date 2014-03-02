@@ -1,4 +1,5 @@
-require 'awesome_print'
+require 'benchmark'
+
 class Cutest
   unless defined?(VERSION)
     VERSION = "1.2.1"
@@ -106,7 +107,7 @@ private
   # isolation between tests.
   def scope(name = nil, &block)
     cutest[:current_scope] = name
-    puts "\n   \033[93mScope: \033[0m#{cutest[:current_scope]}\n"
+    print "\n   \033[93mScope: \033[0m#{cutest[:current_scope]}\n\n     "
     Cutest::Scope.new(&block).call
   end
 
@@ -152,8 +153,11 @@ private
 
     if !cutest[:scope] || cutest[:scope] == cutest[:current_scope]
       if !cutest[:only] || cutest[:only] == name
-        prepare.each { |blk| blk.call }
-        block.call(setup && setup.call)
+        time_taken = Benchmark.measure do
+          prepare.each { |blk| blk.call }
+          block.call(setup && setup.call)
+        end
+        print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m[passed]\033[0m\n   #{time_taken}\n     "
       end
     end
   end
@@ -192,6 +196,6 @@ private
 
   # Executed when an assertion succeeds.
   def success
-    puts "     \033[93mTest: \033[0m#{cutest[:test]} \033[32m[passed]\033[0m"
+    print "."
   end
 end
