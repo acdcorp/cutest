@@ -73,7 +73,7 @@ class Cutest
   def self.display_trace(line)
     fn, ln = line.split(":")
 
-    puts "  \033[93mline: #{code(fn, ln)}"
+    puts "  \033[90mline: #{code(fn, ln)}"
     puts "  \033[0mfile: #{fn} +#{ln}"
   end
 
