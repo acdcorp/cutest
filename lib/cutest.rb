@@ -34,7 +34,7 @@ class Cutest
         trace = $!.backtrace
         pivot = trace.index { |line| line.match(file) }
 
-        puts "\n     \e[93mTest: \e[0m%s \e[31m✘\e[0m\n" % cutest[:test]
+        puts "\n     \e[93mTest: \e[0m%s\e[31m✘\e[0m\n" % (t = cutest[:test] ? "#{t} " : '')
 
         if pivot
           other = trace[0..pivot].select { |line| line !~ FILTER }
