@@ -157,7 +157,7 @@ private
           prepare.each { |blk| blk.call }
           block.call(setup && setup.call)
         end
-        print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m[passed]\033[0m\n   #{time_taken}\n     "
+        print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m\n   #{time_taken}\n     "
       end
     end
   end
@@ -196,6 +196,6 @@ private
 
   # Executed when an assertion succeeds.
   def success
-    print "."
+    print "•"
   end
 end
