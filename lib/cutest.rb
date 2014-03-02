@@ -34,7 +34,7 @@ class Cutest
         trace = $!.backtrace
         pivot = trace.index { |line| line.match(file) }
 
-        puts "\n  test: %s" % cutest[:test]
+        puts "\n     \e[93mTest: \e[0m%s \e[31m✘\e[0m\n" % cutest[:test]
 
         if pivot
           other = trace[0..pivot].select { |line| line !~ FILTER }
@@ -66,15 +66,15 @@ class Cutest
       end
     end
 
-    print "\n\033[93m#{$!.class}: "
-    print "\033[91m#{$!.message}\n"
+    print "     \033[93m#{$!.class}: "
+    print "\033[31m#{$!.message}\n"
   end
 
   def self.display_trace(line)
     fn, ln = line.split(":")
 
-    puts "  \033[90mline: #{code(fn, ln)}"
-    puts "  \033[0mfile: #{fn} +#{ln}"
+    puts "     → \033[0mfile: #{fn} ↪#{ln}\e[0m"
+    puts "     → \033[90mline: #{code(fn, ln)}\e[0m"
   end
 
   class AssertionFailed < StandardError
