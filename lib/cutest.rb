@@ -157,7 +157,7 @@ private
           prepare.each { |blk| blk.call }
           block.call(setup && setup.call)
         end
-        print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m\n   \e[94m#{time_taken}\033[0m\n"
+        print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m\n   \e[94m#{time_taken}\033[0m\n     "
       end
     end
   end
