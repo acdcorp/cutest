@@ -25,7 +25,6 @@ class Cutest
     fork do
       begin
         load(file)
-
       rescue LoadError, SyntaxError
         display_error
         exit 1
@@ -45,7 +44,11 @@ class Cutest
 
         display_error
 
-        exit 1
+        if not cutest[:pry_rescue]
+          exit 1
+        else
+          Process.waitall
+        end
       end
     end
   end

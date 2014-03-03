@@ -14,4 +14,7 @@ Gem::Specification.new do |s|
   s.files = `git ls-files`.split("\n")
 
   s.executables.push "cutest"
+
+  s.add_dependency 'pry-rescue'
+  s.add_dependency 'pry-stack_explorer'
 end
