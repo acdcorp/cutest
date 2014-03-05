@@ -17,7 +17,11 @@ files = Clap.run ARGV,
   "-v"      => lambda { puts Cutest::VERSION }
 
 if files.any?
-  success = Cutest.run(Dir[*files])
+  begin
+    success = Cutest.run(Dir[*files])
 
-  exit(1) unless success
+    exit(1) unless success
+  rescue ThreadError
+    # Ignore this as it's caused by Process.waitall when using -p
+  end
 end

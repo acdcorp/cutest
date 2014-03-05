@@ -47,7 +47,11 @@ class Cutest
         if not cutest[:pry_rescue]
           exit 1
         else
-          Process.waitall
+          begin
+            Process.waitall
+          rescue ThreadError
+            # Ignore this as it's caused by Process.waitall when using -p
+          end
         end
       end
     end
