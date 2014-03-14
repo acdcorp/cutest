@@ -11,9 +11,16 @@ class Cutest
     status = files.all? do |file|
       run_file(file)
 
-      Process.wait
-
-      $?.success?
+      if not cutest[:pry_rescue]
+        Process.wait
+        $?.success?
+      else
+        begin
+          Process.waitall
+        rescue ThreadError, Interrupt
+          # Ignore this as it's caused by Process.waitall when using -p
+        end
+      end
     end
 
     puts
@@ -49,7 +56,7 @@ class Cutest
         else
           begin
             Process.waitall
-          rescue ThreadError
+          rescue ThreadError, Interrupt
             # Ignore this as it's caused by Process.waitall when using -p
           end
         end
