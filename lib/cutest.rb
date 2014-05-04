@@ -121,6 +121,8 @@ private
   # isolation between tests.
   def scope(name = nil, &block)
     cutest[:current_scope] = name
+    return if cutest[:scope] and cutest[:scope] != cutest[:current_scope]
+
     print "\n   \033[93mScope: \033[0m#{cutest[:current_scope]}\n\n     "
     Cutest::Scope.new(&block).call
   end

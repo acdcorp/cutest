@@ -10,7 +10,7 @@ require_relative "../lib/cutest/vendor/clap"
 
 files = Clap.run ARGV,
   "-r"      => lambda { |file| require file },
-  "-o"      => lambda { |name| cutest[:only] = name },
+  "-t"      => lambda { |name| cutest[:only] = name },
   "-s"      => lambda { |name| cutest[:scope] = name },
   "-b"      => lambda { cutest[:backtrace] = true },
   "-p"      => lambda { ENV['PRY_RESCUE'] = 'true'; cutest[:pry_rescue] = true },
