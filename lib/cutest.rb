@@ -2,7 +2,7 @@ require 'benchmark'
 
 class Cutest
   unless defined?(VERSION)
-    VERSION = "1.2.1"
+    VERSION = "1.2.2"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
