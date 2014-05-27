@@ -2,9 +2,16 @@ require 'benchmark'
 
 class Cutest
   unless defined?(VERSION)
-    VERSION = "1.2.2"
+    VERSION = "1.2.3"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
+  end
+
+  def self.load_envs env
+    File.foreach env do |line|
+      key, value = line.split "="
+      ENV[key] = value.gsub('\n', '').strip
+    end
   end
 
   def self.run(files)
