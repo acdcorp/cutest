@@ -18,4 +18,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'pry'
   s.add_dependency 'awesome_print'
   s.add_dependency "clap"
+  s.add_dependency "mocoso"
 end

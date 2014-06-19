@@ -1,5 +1,4 @@
 test "output of successful run" do
-  require 'pry'
   expected = "•"
 
   out = %x{./bin/cutest test/fixtures/success.rb}

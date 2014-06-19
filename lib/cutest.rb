@@ -2,7 +2,7 @@ require 'benchmark'
 
 class Cutest
   unless defined?(VERSION)
-    VERSION = "1.2.4"
+    VERSION = "1.3.0"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -55,7 +55,7 @@ class Cutest
         trace = $!.backtrace
         pivot = trace.index { |line| line.match(file) }
 
-        puts "\n     \e[93mTest: \e[0m%s\e[31m✘\e[0m\n" % (cutest[:test] != '' ? "#{cutest[:test]} " : '')
+        puts "  \e[93mTest: \e[0m%s\e[31m✘\e[0m\n" % (cutest[:test] != '' ? "#{cutest[:test]} " : '')
 
         if pivot
           other = trace[0..pivot].select { |line| line !~ FILTER }
@@ -95,15 +95,15 @@ class Cutest
       end
     end
 
-    print "     \033[93m#{$!.class}: "
-    print "\033[31m#{$!.message}\n"
+    puts "  \033[93m#{$!.class}: \033[31m#{$!.message}"
+    puts ""
   end
 
   def self.display_trace(line)
     fn, ln = line.split(":")
 
-    puts "     → \033[0mfile: #{fn} ↪#{ln}\e[0m"
-    puts "     → \033[90mline: #{code(fn, ln)}\e[0m"
+    puts "  → \033[0mfile: #{fn} ↪#{ln}\e[0m"
+    puts "  → \033[90mline: #{code(fn, ln)}\e[0m"
   end
 
   class AssertionFailed < StandardError
@@ -121,7 +121,8 @@ class Cutest
 end
 
 module Kernel
-private
+
+  private
 
   # Use Thread.current[:cutest] to store information about test preparation
   # and setup.
@@ -136,7 +137,8 @@ private
   # isolation between tests.
   def scope(name = nil, &block)
     if !cutest[:scope] || cutest[:scope] == name
-      print "\n   \033[93mScope: \033[0m#{cutest[:scope]}\n\n     "
+      puts "\033[93mScope: \033[0m#{cutest[:scope]}"
+      puts ""
       Cutest::Scope.new(&block).call
     end
   end
@@ -186,7 +188,8 @@ private
         prepare.each { |blk| blk.call }
         block.call(setup && setup.call)
         end
-      print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m\n   \e[94m#{time_taken}\033[0m\n     "
+      puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
+      puts "\e[94m#{time_taken}\033[0m"
     end
 
     cutest[:test] = nil
@@ -226,6 +229,6 @@ private
 
   # Executed when an assertion succeeds.
   def success
-    print "•"
+    puts "  •"
   end
 end

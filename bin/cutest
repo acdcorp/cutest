@@ -9,6 +9,7 @@ end
 
 require_relative "../lib/cutest"
 require "clap"
+require "mocoso"
 
 files = Clap.run ARGV,
   "-r"      => lambda { |file| require file },
@@ -24,7 +25,7 @@ files = Clap.run ARGV,
 if files.any?
   begin
     env      = '.env'
-    rack_env = ".#{ENV['RACK_ENV']}#{env}"
+    rack_env = ".#{env}.#{ENV['RACK_ENV']}"
 
     if File.file? rack_env
       Cutest.load_envs rack_env
