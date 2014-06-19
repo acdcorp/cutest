@@ -2,7 +2,7 @@ require 'benchmark'
 
 class Cutest
   unless defined?(VERSION)
-    VERSION = "1.2.3"
+    VERSION = "1.2.4"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -14,20 +14,28 @@ class Cutest
     end
   end
 
+  def self.silence_warnings
+    old_verbose, $VERBOSE = $VERBOSE, nil
+    yield
+  ensure
+    $VERBOSE = old_verbose
+  end
+
   def self.run(files)
+    if !cutest[:warnings]
+      Cutest.silence_warnings do
+        Cutest.now_run files
+      end
+    else
+      Cutest.now_run files
+    end
+  end
+
+  def self.now_run files
     status = files.all? do |file|
       run_file(file)
 
-      if not cutest[:pry_rescue]
-        Process.wait
-        $?.success?
-      else
-        begin
-          Process.waitall
-        rescue ThreadError, Interrupt
-          # Ignore this as it's caused by Process.waitall when using -p
-        end
-      end
+      Process.wait2.last.success?
     end
 
     puts
@@ -127,11 +135,10 @@ private
   # Create a class where the block will be evaluated. Recommended to improve
   # isolation between tests.
   def scope(name = nil, &block)
-    cutest[:current_scope] = name
-    return if cutest[:scope] and cutest[:scope] != cutest[:current_scope]
-
-    print "\n   \033[93mScope: \033[0m#{cutest[:current_scope]}\n\n     "
-    Cutest::Scope.new(&block).call
+    if !cutest[:scope] || cutest[:scope] == name
+      print "\n   \033[93mScope: \033[0m#{cutest[:scope]}\n\n     "
+      Cutest::Scope.new(&block).call
+    end
   end
 
   # Prepare the environment in order to run the tests. This method can be
@@ -174,15 +181,15 @@ private
   def test(name = nil, &block)
     cutest[:test] = name
 
-    if !cutest[:scope] || cutest[:scope] == cutest[:current_scope]
-      if !cutest[:only] || cutest[:only] == name
-        time_taken = Benchmark.measure do
-          prepare.each { |blk| blk.call }
-          block.call(setup && setup.call)
+    if !cutest[:only] || cutest[:only] == name
+      time_taken = Benchmark.measure do
+        prepare.each { |blk| blk.call }
+        block.call(setup && setup.call)
         end
-        print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m\n   \e[94m#{time_taken}\033[0m\n     "
-      end
+      print "     \n     \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m\n   \e[94m#{time_taken}\033[0m\n     "
     end
+
+    cutest[:test] = nil
   end
 
   # Assert that value is not nil or false.

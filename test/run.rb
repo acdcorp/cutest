@@ -1,9 +1,10 @@
 test "output of successful run" do
-  expected = ".\n"
+  require 'pry'
+  expected = "•"
 
   out = %x{./bin/cutest test/fixtures/success.rb}
 
-  assert_equal(expected, out)
+  assert out[expected]
 end
 
 test "exit code of successful run" do
@@ -12,27 +13,19 @@ test "exit code of successful run" do
 end
 
 test "output of failed run" do
-  expected = "\n" +
-             "  test: failed assertion\n" +
-             "  line: assert false\n" +
-             "  file: test/fixtures/failure.rb +2\n\n" +
-             "Cutest::AssertionFailed: expression returned false\n\n"
+  expected = "failed assertion"
 
   out = %x{./bin/cutest test/fixtures/failure.rb}
 
-  assert_equal(expected, out)
+  assert out[expected]
 end
 
 test "output of failed run" do
-  expected = "\n" +
-             "  test: some unhandled exception\n" +
-             "  line: raise \"Oops\"\n" +
-             "  file: test/fixtures/exception.rb +2\n\n" +
-             "RuntimeError: Oops\n\n"
+  expected = "RuntimeError"
 
   out = %x{./bin/cutest test/fixtures/exception.rb}
 
-  assert_equal(expected, out)
+  assert out[expected]
 end
 
 test "exit code of failed run" do
@@ -42,27 +35,27 @@ test "exit code of failed run" do
 end
 
 test "output of custom assertion" do
-  expected = "\n" +
-             "  test: failed custom assertion\n" +
-             "  line: assert_empty \"foo\"\n" +
-             "  file: test/fixtures/fail_custom_assertion.rb +7\n\n" +
-             "Cutest::AssertionFailed: not empty\n\n"
+  expected = "Cutest::AssertionFailed"
 
   out = %x{./bin/cutest test/fixtures/fail_custom_assertion.rb}
 
-  assert_equal(expected, out)
+  assert out[expected]
 end
 
 test "output of failure in nested file" do
-  expected = "\n" +
-             "  test: failed assertion\n" +
-             "  line: assert false\n" +
-             "  file: test/fixtures/failure.rb +2\n\n" +
-             "Cutest::AssertionFailed: expression returned false\n\n"
+  expected = "Cutest::AssertionFailed"
 
   out = %x{./bin/cutest test/fixtures/failure_in_loaded_file.rb}
 
-  assert_equal(expected, out)
+  assert out[expected]
+end
+
+test "output of failure outside block" do
+  expected = "Cutest::AssertionFailed"
+
+  out = %x{./bin/cutest test/fixtures/outside_block.rb}
+
+  assert out[expected]
 end
 
 test "only runs given scope name" do
@@ -72,7 +65,7 @@ test "only runs given scope name" do
 end
 
 test "runs by given scope and test names" do
-  %x{./bin/cutest test/fixtures/only_run_given_scope_name.rb -s scope -o test}
+  %x{./bin/cutest test/fixtures/only_run_given_scope_name.rb -s scope -t test}
 
   assert_equal 0, $?.to_i
 end

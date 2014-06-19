@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 
   s.executables.push "cutest"
 
-  s.add_dependency 'pry-rescue'
-  s.add_dependency 'pry-stack_explorer'
+  s.add_dependency 'pry'
+  s.add_dependency 'awesome_print'
+  s.add_dependency "clap"
 end
