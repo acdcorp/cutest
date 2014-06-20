@@ -5,7 +5,7 @@ class Cutest
   autoload :Database, 'database'
 
   unless defined?(VERSION)
-    VERSION = "1.3.2"
+    VERSION = "1.3.3"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -155,6 +155,8 @@ module Kernel
   # Create a class where the block will be evaluated. Recommended to improve
   # isolation between tests.
   def scope(name = nil, &block)
+    cutest[:current_scope] = name
+
     if !cutest[:scope] || cutest[:scope] == name
       puts "\033[93mScope: \033[0m#{cutest[:scope]}"
       puts ""
@@ -201,6 +203,8 @@ module Kernel
   # to execute preparation and setup blocks.
   def test(name = nil, &block)
     cutest[:test] = name
+
+    return if cutest[:current_scope] != cutest[:scope]
 
     if !cutest[:only] || cutest[:only] == name
       print '  '
