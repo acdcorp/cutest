@@ -5,7 +5,7 @@ class Cutest
   autoload :Database, 'database'
 
   unless defined?(VERSION)
-    VERSION = "1.3.4"
+    VERSION = "1.3.5"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -155,8 +155,6 @@ module Kernel
   # Create a class where the block will be evaluated. Recommended to improve
   # isolation between tests.
   def scope(name = nil, &block)
-    cutest[:current_scope] = name
-
     if !cutest[:scope] || cutest[:scope] == name
       puts "\033[93mScope: \033[0m#{cutest[:scope]}"
       puts ""
@@ -204,17 +202,15 @@ module Kernel
   def test(name = nil, &block)
     cutest[:test] = name
 
-    if !cutest[:scope] || cutest[:scope] == cutest[:current_scope]
-      if !cutest[:only] || cutest[:only] == name
-        print '  '
-        time_taken = Benchmark.measure do
-          prepare.each { |blk| blk.call }
-          block.call(setup && setup.call)
-        end
-        puts ''
-        puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
-        puts "\e[94m#{time_taken}\033[0m"
+    if !cutest[:only] || cutest[:only] == name
+      print '  '
+      time_taken = Benchmark.measure do
+        prepare.each { |blk| blk.call }
+        block.call(setup && setup.call)
       end
+      puts ''
+      puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
+      puts "\e[94m#{time_taken}\033[0m"
     end
 
     cutest[:test] = nil
