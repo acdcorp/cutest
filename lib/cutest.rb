@@ -5,7 +5,7 @@ class Cutest
   autoload :Database, 'database'
 
   unless defined?(VERSION)
-    VERSION = "1.3.5"
+    VERSION = "1.3.6"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -156,7 +156,7 @@ module Kernel
   # isolation between tests.
   def scope(name = nil, &block)
     if !cutest[:scope] || cutest[:scope] == name
-      puts "\033[93mScope: \033[0m#{cutest[:scope]}"
+      puts "\033[93mScope: \033[0m#{name}"
       puts ""
       Cutest::Scope.new(&block).call
     end
