@@ -1,112 +1,131 @@
 require 'benchmark'
+require 'ostruct'
 
 class Cutest
+  autoload :Database, 'database'
+
   unless defined?(VERSION)
-    VERSION = "1.3.0"
+    VERSION = "1.3.1"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
 
-  def self.load_envs env
-    File.foreach env do |line|
-      key, value = line.split "="
-      ENV[key] = value.gsub('\n', '').strip
+  class AssertionFailed < StandardError; end
+
+  class << self
+
+    attr_accessor :config, :reset_config
+
+    def setup
+      yield config
     end
-  end
 
-  def self.silence_warnings
-    old_verbose, $VERBOSE = $VERBOSE, nil
-    yield
-  ensure
-    $VERBOSE = old_verbose
-  end
+    def config
+      @config || reset_config!
+    end
 
-  def self.run(files)
-    if !cutest[:warnings]
-      Cutest.silence_warnings do
+    def reset_config!
+      @config = OpenStruct.new database: {}
+    end
+
+    def load_envs env
+      File.foreach env do |line|
+        key, value = line.split "="
+        ENV[key] = value.gsub('\n', '').strip
+      end
+    end
+
+    def silence_warnings
+      old_verbose, $VERBOSE = $VERBOSE, nil
+      yield
+    ensure
+      $VERBOSE = old_verbose
+    end
+
+    def run(files)
+      if !cutest[:warnings]
+        Cutest.silence_warnings do
+          Cutest.now_run files
+        end
+      else
         Cutest.now_run files
       end
-    else
-      Cutest.now_run files
-    end
-  end
-
-  def self.now_run files
-    status = files.all? do |file|
-      run_file(file)
-
-      Process.wait2.last.success?
     end
 
-    puts
+    def now_run files
+      status = files.all? do |file|
+        run_file(file)
 
-    status
-  end
+        Process.wait2.last.success?
+      end
 
-  def self.run_file(file)
-    fork do
-      begin
-        load(file)
-      rescue LoadError, SyntaxError
-        display_error
-        exit 1
+      puts
 
-      rescue StandardError
-        trace = $!.backtrace
-        pivot = trace.index { |line| line.match(file) }
+      status
+    end
 
-        puts "  \e[93mTest: \e[0m%s\e[31m✘\e[0m\n" % (cutest[:test] != '' ? "#{cutest[:test]} " : '')
-
-        if pivot
-          other = trace[0..pivot].select { |line| line !~ FILTER }
-          other.reverse.each { |line| display_trace(line) }
-        else
-          display_trace(trace.first)
-        end
-
-        display_error
-
-        if not cutest[:pry_rescue]
+    def run_file(file)
+      fork do
+        begin
+          load(file)
+        rescue LoadError, SyntaxError
+          display_error
           exit 1
-        else
-          begin
-            Process.waitall
-          rescue ThreadError, Interrupt
-            # Ignore this as it's caused by Process.waitall when using -p
+
+        rescue StandardError
+          trace = $!.backtrace
+          pivot = trace.index { |line| line.match(file) }
+
+          puts "  \e[93mTest: \e[0m%s\e[31m✘\e[0m\n" % (cutest[:test] != '' ? "#{cutest[:test]} " : '')
+
+          if pivot
+            other = trace[0..pivot].select { |line| line !~ FILTER }
+            other.reverse.each { |line| display_trace(line) }
+          else
+            display_trace(trace.first)
+          end
+
+          display_error
+
+          if not cutest[:pry_rescue]
+            exit 1
+          else
+            begin
+              Process.waitall
+            rescue ThreadError, Interrupt
+              # Ignore this as it's caused by Process.waitall when using -p
+            end
           end
         end
       end
     end
-  end
 
-  def self.code(fn, ln)
-    begin
-      CACHE[fn][ln.to_i - 1].strip
-    rescue
-      "(Can't display line)"
-    end
-  end
-
-  def self.display_error
-    if cutest[:backtrace]
-      bt = $!.backtrace
-      bt.each do |line|
-        display_trace line
+    def code(fn, ln)
+      begin
+        CACHE[fn][ln.to_i - 1].strip
+      rescue
+        "(Can't display line)"
       end
     end
 
-    puts "  \033[93m#{$!.class}: \033[31m#{$!.message}"
-    puts ""
-  end
+    def display_error
+      if cutest[:backtrace]
+        bt = $!.backtrace
+        bt.each do |line|
+          display_trace line
+        end
+      end
 
-  def self.display_trace(line)
-    fn, ln = line.split(":")
+      puts "  \033[93m#{$!.class}: \033[31m#{$!.message}"
+      puts ""
+    end
 
-    puts "  → \033[0mfile: #{fn} ↪#{ln}\e[0m"
-    puts "  → \033[90mline: #{code(fn, ln)}\e[0m"
-  end
+    def display_trace(line)
+      fn, ln = line.split(":")
 
-  class AssertionFailed < StandardError
+      puts "  → \033[0mfile: #{fn} ↪#{ln}\e[0m"
+      puts "  → \033[90mline: #{code(fn, ln)}\e[0m"
+    end
   end
 
   class Scope
@@ -184,10 +203,12 @@ module Kernel
     cutest[:test] = name
 
     if !cutest[:only] || cutest[:only] == name
+      print '  '
       time_taken = Benchmark.measure do
         prepare.each { |blk| blk.call }
         block.call(setup && setup.call)
-        end
+      end
+      puts ''
       puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
       puts "\e[94m#{time_taken}\033[0m"
     end
@@ -229,6 +250,6 @@ module Kernel
 
   # Executed when an assertion succeeds.
   def success
-    puts "  •"
+    print "•"
   end
 end
