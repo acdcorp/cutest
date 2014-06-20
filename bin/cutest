@@ -8,7 +8,6 @@ if ARGV.empty?
 end
 
 require "clap"
-require "mocoso"
 require_relative "../lib/cutest"
 
 files = Clap.run ARGV,
@@ -19,6 +18,12 @@ files = Clap.run ARGV,
   "-b"      => lambda { cutest[:backtrace] = true },
   "-p"      => lambda {
     ENV['PRY_RESCUE'] = 'true'; cutest[:pry_rescue] = true
+  },
+  "-d"      => lambda {
+    require 'pry'
+    require 'awesome_print'
+    ENV['PRY_RESCUE']   = 'true'
+    cutest[:pry_rescue] = true
   },
   "-v"      => lambda { puts Cutest::VERSION }
 
