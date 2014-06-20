@@ -5,7 +5,7 @@ class Cutest
   autoload :Database, 'database'
 
   unless defined?(VERSION)
-    VERSION = "1.3.3"
+    VERSION = "1.3.4"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -204,17 +204,17 @@ module Kernel
   def test(name = nil, &block)
     cutest[:test] = name
 
-    return if cutest[:current_scope] != cutest[:scope]
-
-    if !cutest[:only] || cutest[:only] == name
-      print '  '
-      time_taken = Benchmark.measure do
-        prepare.each { |blk| blk.call }
-        block.call(setup && setup.call)
+    if !cutest[:scope] || cutest[:scope] == cutest[:current_scope]
+      if !cutest[:only] || cutest[:only] == name
+        print '  '
+        time_taken = Benchmark.measure do
+          prepare.each { |blk| blk.call }
+          block.call(setup && setup.call)
+        end
+        puts ''
+        puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
+        puts "\e[94m#{time_taken}\033[0m"
       end
-      puts ''
-      puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
-      puts "\e[94m#{time_taken}\033[0m"
     end
 
     cutest[:test] = nil
