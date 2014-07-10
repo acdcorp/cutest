@@ -1,3 +1,5 @@
+Encoding.default_external = "UTF-8"
+
 require 'benchmark'
 require 'ostruct'
 
@@ -5,7 +7,7 @@ class Cutest
   autoload :Database, 'database'
 
   unless defined?(VERSION)
-    VERSION = "1.3.8"
+    VERSION = "1.3.9"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
