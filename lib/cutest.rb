@@ -7,7 +7,7 @@ class Cutest
   autoload :Database, 'database'
 
   unless defined?(VERSION)
-    VERSION = "1.4.0"
+    VERSION = "1.5.0"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -127,6 +127,28 @@ class Cutest
 
       puts "  → \033[0mfile: #{fn} ↪#{ln}\e[0m"
       puts "  → \033[90mline: #{code(fn, ln)}\e[0m"
+    end
+
+    def capture_output
+      old_stdout = STDOUT.clone
+      pipe_r, pipe_w = IO.pipe
+      pipe_r.sync    = true
+      output         = ""
+      reader = Thread.new do
+        begin
+          loop do
+            output << pipe_r.readpartial(1024)
+          end
+        rescue EOFError
+        end
+      end
+      STDOUT.reopen(pipe_w)
+      yield
+    ensure
+      STDOUT.reopen(old_stdout)
+      pipe_w.close
+      reader.join
+      return output
     end
   end
 
