@@ -7,7 +7,7 @@ class Cutest
   autoload :Database, 'cutest/database'
 
   unless defined?(VERSION)
-    VERSION = "1.5.1"
+    VERSION = "1.6.0"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -224,6 +224,29 @@ module Kernel
   # inside test blocks), it is necessary to wrap them in test blocks in order
   # to execute preparation and setup blocks.
   def test(name = nil, &block)
+    if !cutest[:all_tests]
+      run_test name, &block
+    else
+      begin
+        run_test name, &block
+      rescue LoadError, SyntaxError
+        display_error
+        exit 1
+
+      rescue StandardError
+        puts ''
+        trace = $!.backtrace
+
+        puts "  \e[93mTest: \e[0m%s\e[31m✘\e[0m\n" % (cutest[:test] != '' ? "#{cutest[:test]} " : '')
+
+        Cutest.display_trace(trace.first)
+
+        Cutest.display_error
+      end
+    end
+  end
+
+  def run_test name = nil, &block
     cutest[:test] = name
 
     if !cutest[:only] || cutest[:only] == name
@@ -274,6 +297,6 @@ module Kernel
 
   # Executed when an assertion succeeds.
   def success
-    print "•"
+    print "\033[32m•\033[0m"
   end
 end

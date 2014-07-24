@@ -15,6 +15,7 @@ files = Clap.run ARGV,
   "-r"      => lambda { |file| require file },
   "-t"      => lambda { |name| cutest[:only] = name },
   "-s"      => lambda { |name| cutest[:scope] = name },
+  "-a"      => lambda { cutest[:all_tests] = true },
   "-w"      => lambda { |name| cutest[:warnings] = true },
   "-b"      => lambda { cutest[:backtrace] = true },
   "-p"      => lambda {
