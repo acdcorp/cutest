@@ -30,13 +30,15 @@ class Cutest
       end
     end
 
-    def reset
-      connect
+    def reset database = false, options = {}
+      connect database
+
+      c = config.merge options
 
       ignore_tables = %w(schema_migrations)
 
-      if config.key? :ignore_tables
-        ignore_tables.concat config[:ignore_tables]
+      if c.key? :ignore_tables
+        ignore_tables.concat c[:ignore_tables]
       end
 
       conn   = ActiveRecord::Base.connection
@@ -51,12 +53,10 @@ class Cutest
       end
     end
 
-    def connect
-      return if ActiveRecord::Base.connected?
-
+    def connect database = false
       ActiveRecord::Base.default_timezone = Time.zone
 
-      db = URI.parse config[:url]
+      db = URI.parse database || config[:url]
 
       ActiveRecord::Base.establish_connection(
           adapter:      db.scheme == 'postgres' ? 'postgresql' : db.scheme,
@@ -71,7 +71,7 @@ class Cutest
     end
 
     def config
-      Cutest.config.database
+      Cutest.config.database.clone
     end
   end
 end
