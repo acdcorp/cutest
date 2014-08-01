@@ -34,11 +34,19 @@ if files.any?
     env      = '.env'
     rack_env = "#{env}.#{ENV['RACK_ENV']}"
 
-    if File.file? rack_env
-      Cutest.load_envs rack_env
-    elsif File.file? env
-      Cutest.load_envs env
+    File.foreach env do |line|
+      key, value = line.split "="
+      ENV[key] = value.gsub('\n', '').strip
     end
+
+    if File.file? rack_env
+      File.foreach rack_env do |line|
+        key, value = line.split "="
+        ENV[key] = value.gsub('\n', '').strip
+      end
+    end
+
+    Gem.clear_paths
 
     success = Cutest.run(Dir[*files])
 
