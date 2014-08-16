@@ -7,7 +7,7 @@ class Cutest
   autoload :Database, 'cutest/database'
 
   unless defined?(VERSION)
-    VERSION = "1.6.4"
+    VERSION = "1.7.0"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -169,7 +169,7 @@ module Kernel
 
   # Use Thread.current[:cutest] to store information about test preparation
   # and setup.
-  Thread.current[:cutest] ||= { :prepare => [] }
+  Thread.current[:cutest] ||= { :prepare => [], :before => [], :after => [] }
 
   # Shortcut to access Thread.current[:cutest].
   def cutest
@@ -194,6 +194,18 @@ module Kernel
   def prepare(&block)
     cutest[:prepare] << block if block_given?
     cutest[:prepare]
+  end
+
+  # Unlike prepare this gets evaled before each test
+  def before(&block)
+    cutest[:before] << block if block_given?
+    cutest[:before]
+  end
+
+  # Unlike prepare this gets evaled after each test
+  def before(&block)
+    cutest[:after] << block if block_given?
+    cutest[:after]
   end
 
   # Setup parameters for the tests. The block passed to setup is evaluated
@@ -253,7 +265,9 @@ module Kernel
       print '  '
       time_taken = Benchmark.measure do
         prepare.each { |blk| blk.call }
+        before.each { |blk| self.instance_eval blk }
         block.call(setup && self.instance_eval(&setup))
+        after.each { |blk| self.instance_eval blk }
       end
       puts ''
       puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
