@@ -7,7 +7,7 @@ class Cutest
   autoload :Database, 'cutest/database'
 
   unless defined?(VERSION)
-    VERSION = "1.7.0"
+    VERSION = "1.7.1"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end
@@ -203,7 +203,7 @@ module Kernel
   end
 
   # Unlike prepare this gets evaled after each test
-  def before(&block)
+  def after(&block)
     cutest[:after] << block if block_given?
     cutest[:after]
   end
@@ -265,9 +265,9 @@ module Kernel
       print '  '
       time_taken = Benchmark.measure do
         prepare.each { |blk| blk.call }
-        before.each { |blk| self.instance_eval blk }
+        before.each { |blk| self.instance_eval(&blk) }
         block.call(setup && self.instance_eval(&setup))
-        after.each { |blk| self.instance_eval blk }
+        after.each { |blk| self.instance_eval(&blk) }
       end
       puts ''
       puts "  \033[93mTest: \033[0m#{cutest[:test]} \033[32m✔\033[0m"
