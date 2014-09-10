@@ -7,7 +7,7 @@ class Cutest
   autoload :Database, 'cutest/database'
 
   unless defined?(VERSION)
-    VERSION = "1.7.1"
+    VERSION = "1.8.0"
     FILTER = %r[/(ruby|jruby|rbx)[-/]([0-9\.])+]
     CACHE = Hash.new { |h, k| h[k] = File.readlines(k) }
   end

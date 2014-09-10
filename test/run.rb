@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 test "output of successful run" do
   expected = "•"
 

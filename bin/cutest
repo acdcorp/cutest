@@ -34,9 +34,11 @@ if files.any?
     env      = '.env'
     rack_env = "#{env}.#{ENV['RACK_ENV']}"
 
-    File.foreach env do |line|
-      key, value = line.split "=", 2
-      ENV[key] = value.gsub('\n', '').strip
+    if File.file? env
+      File.foreach env do |line|
+        key, value = line.split "=", 2
+        ENV[key] = value.gsub('\n', '').strip
+      end
     end
 
     if File.file? rack_env
