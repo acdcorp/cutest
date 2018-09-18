@@ -1,7 +1,7 @@
 require "./lib/cutest"
 
 Gem::Specification.new do |s|
-  s.name              = "cutest-cj"
+  s.name              = "cutest"
   s.version           = Cutest::VERSION
   s.summary           = "Forking tests."
   s.description       = "Run tests in separate processes to avoid shared state."
